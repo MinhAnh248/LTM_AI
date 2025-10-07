@@ -323,8 +323,8 @@ const SavingsPage = () => {
         api.getSavingsSummary()
       ]);
 
-      setGoals(goalsRes.data);
-      setSummary(summaryRes.data);
+      setGoals(Array.isArray(goalsRes.data) ? goalsRes.data : []);
+      setSummary(summaryRes.data || {});
     } catch (error) {
       console.error('Error loading savings data:', error);
       toast.error('Không thể tải dữ liệu tiết kiệm');

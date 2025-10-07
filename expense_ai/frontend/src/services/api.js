@@ -1,11 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// LAN: const API_BASE_URL = 'http://10.67.148.12:5000/api';
+// Ngrok: Thay URL bên dưới bằng URL từ ngrok
+// Thay URL bên dưới bằng URL mới từ Ngrok
+const API_BASE_URL = 'https://uniocular-abraham-phrenetically.ngrok-free.dev/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 

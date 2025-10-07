@@ -118,8 +118,8 @@ const Dashboard = () => {
       setIncomeSummary(incomeRes.data);
       setDebtSummary(debtRes.data);
       setSavingsSummary(savingsRes.data);
-      setCategoryData(categoryRes.data);
-      setDailyData(dailyRes.data);
+      setCategoryData(Array.isArray(categoryRes.data) ? categoryRes.data : []);
+      setDailyData(Array.isArray(dailyRes.data) ? dailyRes.data : []);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {

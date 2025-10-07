@@ -224,10 +224,10 @@ const ReportPage = () => {
       ]);
 
       setReportData({
-        expenses: expensesRes.data,
-        categoryBreakdown: categoryRes.data,
-        dailySpending: dailyRes.data,
-        summary: summaryRes.data
+        expenses: Array.isArray(expensesRes.data) ? expensesRes.data : [],
+        categoryBreakdown: Array.isArray(categoryRes.data) ? categoryRes.data : [],
+        dailySpending: Array.isArray(dailyRes.data) ? dailyRes.data : [],
+        summary: summaryRes.data || {}
       });
       setAnalysis(analysisRes.data);
     } catch (error) {
@@ -253,7 +253,7 @@ const ReportPage = () => {
   };
 
   const getTopCategory = () => {
-    if (reportData.categoryBreakdown.length === 0) return 'Không có dữ liệu';
+    if (!Array.isArray(reportData.categoryBreakdown) || reportData.categoryBreakdown.length === 0) return 'Không có dữ liệu';
     const top = reportData.categoryBreakdown.reduce((max, cat) => 
       cat.amount > max.amount ? cat : max
     );
@@ -261,15 +261,17 @@ const ReportPage = () => {
   };
 
   const getAverageDaily = () => {
-    if (reportData.dailySpending.length === 0) return 0;
+    if (!Array.isArray(reportData.dailySpending) || reportData.dailySpending.length === 0) return 0;
     const total = reportData.dailySpending.reduce((sum, day) => sum + day.amount, 0);
     return total / reportData.dailySpending.length;
   };
 
   const getSpendingTrend = () => {
-    if (reportData.dailySpending.length < 2) return 'Không đủ dữ liệu';
+    if (!Array.isArray(reportData.dailySpending) || reportData.dailySpending.length < 2) return 'Không đủ dữ liệu';
     const recent = reportData.dailySpending.slice(-7);
     const older = reportData.dailySpending.slice(-14, -7);
+    
+    if (recent.length === 0 || older.length === 0) return 'Không đủ dữ liệu';
     
     const recentAvg = recent.reduce((sum, day) => sum + day.amount, 0) / recent.length;
     const olderAvg = older.reduce((sum, day) => sum + day.amount, 0) / older.length;

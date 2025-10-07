@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sys
 import os
@@ -27,7 +27,7 @@ if ocr_processor:
 else:
     print("OCR service not available - scan feature will be disabled")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 CORS(app)  # Enable CORS for frontend
 
 # Initialize components
@@ -431,5 +431,22 @@ def _format_date(date_str):
     # If parsing fails, return today
     return datetime.now().strftime('%Y-%m-%d')
 
+# Serve React frontend
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    # Don't serve frontend for API routes
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
+    
+    # Serve index.html for root and React Router paths
+    if path == "" or not os.path.exists(os.path.join('frontend/build', path)):
+        return send_from_directory('frontend/build', 'index.html')
+    
+    # Serve static files (JS, CSS, images, etc.)
+    return send_from_directory('frontend/build', path)
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # host='0.0.0.0' cho phép truy cập từ mạng LAN/WAN
+    # host='127.0.0.1' chỉ cho phép localhost
+    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -296,8 +296,8 @@ const RemindersPage = () => {
         api.getReminderSummary()
       ]);
 
-      setReminders(remindersRes.data);
-      setSummary(summaryRes.data);
+      setReminders(Array.isArray(remindersRes.data) ? remindersRes.data : []);
+      setSummary(summaryRes.data || {});
     } catch (error) {
       console.error('Error loading reminders data:', error);
       toast.error('Không thể tải dữ liệu lời nhắc');

@@ -4,62 +4,40 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 venv/
+env/
 ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
+dist/
+build/
 
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnp/
-.pnp.js
-frontend/build/
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
+# Database (keep sample, ignore user data)
+# expense_data.db is the sample database for team
+
+# Environment
+.env
+.env.local
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/build/
+npm-debug.log*
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
 # Logs
 *.log
 
-# Environment
-.env
-.env.local
-
-# Temporary files
-*.tmp
-temp/
-tmp/
+# Test files
+test_*.py
+debug_*.py
+*_test.py
