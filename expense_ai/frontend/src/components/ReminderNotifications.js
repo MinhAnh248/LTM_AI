@@ -117,9 +117,10 @@ const ReminderNotifications = () => {
   const loadDueReminders = async () => {
     try {
       const response = await api.getDueReminders();
-      setDueReminders(response.data);
+      setDueReminders(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error loading due reminders:', error);
+      setDueReminders([]);
     } finally {
       setLoading(false);
     }

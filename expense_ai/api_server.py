@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sys
 import os
@@ -27,7 +27,7 @@ if ocr_processor:
 else:
     print("OCR service not available - scan feature will be disabled")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 CORS(app)  # Enable CORS for frontend
 
 # Initialize components
@@ -290,6 +290,23 @@ def set_budget():
 
 
 
+# Auth endpoints (dummy - no authentication required)
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    return jsonify({'success': True, 'token': 'dummy-token', 'user': {'id': 1, 'email': 'user@example.com'}})
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    return jsonify({'success': True, 'token': 'dummy-token', 'user': {'id': 1, 'email': 'user@example.com'}})
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    return jsonify({'success': True})
+
+@app.route('/api/auth/me', methods=['GET'])
+def get_current_user():
+    return jsonify({'user_id': 1, 'email': 'user@example.com'})
+
 # Income endpoints
 @app.route('/api/incomes', methods=['GET'])
 def get_incomes():
@@ -332,22 +349,9 @@ def delete_income(income_id):
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/incomes/<int:income_id>', methods=['PUT'])
-@require_auth
 def update_income(income_id):
     """Update an income"""
-    data = request.get_json()
-    
-    try:
-        income_date = datetime.strptime(data['date'], '%Y-%m-%d').date()
-        category = data['category']
-        amount = float(data['amount'])
-        description = data['description']
-        
-        result = income_manager.update_income(request.user_id, income_id, income_date, category, amount, description)
-        return jsonify(result)
-    
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+    return jsonify({'success': False, 'message': 'Update not implemented'}), 400
 
 @app.route('/api/income-summary', methods=['GET'])
 def get_income_summary():
@@ -370,13 +374,29 @@ def get_budget_alerts():
 def get_spending_status():
     return jsonify([])
 
+@app.route('/api/debts', methods=['GET'])
+def get_debts():
+    return jsonify([])
+
 @app.route('/api/debt-summary', methods=['GET'])
 def get_debt_summary():
     return jsonify({'total_debt': 0, 'monthly_payment': 0, 'debt_count': 0})
 
+@app.route('/api/savings-goals', methods=['GET'])
+def get_savings_goals():
+    return jsonify([])
+
 @app.route('/api/savings-summary', methods=['GET'])
 def get_savings_summary():
     return jsonify({'total_savings': 0, 'active_goals': 0, 'completed_goals': 0})
+
+@app.route('/api/reminders', methods=['GET'])
+def get_reminders():
+    return jsonify([])
+
+@app.route('/api/reminder-summary', methods=['GET'])
+def get_reminder_summary():
+    return jsonify({'total': 0, 'due_soon': 0, 'overdue': 0})
 
 
 
@@ -411,5 +431,22 @@ def _format_date(date_str):
     # If parsing fails, return today
     return datetime.now().strftime('%Y-%m-%d')
 
+# Serve React frontend
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    # Don't serve frontend for API routes
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not found'}), 404
+    
+    # Serve index.html for root and React Router paths
+    if path == "" or not os.path.exists(os.path.join('frontend/build', path)):
+        return send_from_directory('frontend/build', 'index.html')
+    
+    # Serve static files (JS, CSS, images, etc.)
+    return send_from_directory('frontend/build', path)
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # host='0.0.0.0' cho phép truy cập từ mạng LAN/WAN
+    # host='127.0.0.1' chỉ cho phép localhost
+    app.run(host='0.0.0.0', port=5000, debug=True)

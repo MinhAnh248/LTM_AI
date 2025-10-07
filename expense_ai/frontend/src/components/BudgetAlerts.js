@@ -105,9 +105,10 @@ const BudgetAlerts = () => {
   const loadAlerts = async () => {
     try {
       const response = await api.getBudgetAlerts();
-      setAlerts(response.data);
+      setAlerts(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error loading budget alerts:', error);
+      setAlerts([]);
     } finally {
       setLoading(false);
     }

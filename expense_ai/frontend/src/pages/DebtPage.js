@@ -297,8 +297,8 @@ const DebtPage = () => {
         api.getDebtSummary()
       ]);
 
-      setDebts(debtsRes.data);
-      setSummary(summaryRes.data);
+      setDebts(Array.isArray(debtsRes.data) ? debtsRes.data : []);
+      setSummary(summaryRes.data || {});
     } catch (error) {
       console.error('Error loading debt data:', error);
       toast.error('Không thể tải dữ liệu nợ');
