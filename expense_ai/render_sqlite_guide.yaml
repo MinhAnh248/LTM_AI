@@ -1,0 +1,31 @@
+# Add this to your render.yaml file
+
+databases:
+  - name: expense_db_sqlite
+    plan: free
+
+services:
+  - type: web
+    name: expense-ai-service
+    env: python
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      cd frontend
+      npm install
+      npm run build
+    startCommand: python api_server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13
+      - key: DATABASE_URL # Not directly used by SQLite, but good practice
+        fromDatabase:
+          name: expense_db_sqlite
+          property: connectionString
+      - key: RENDER_DISK_PATH
+        value: /var/data
+    disk:
+      name: sqlite-disk
+      mountPath: /var/data
+      sizeGB: 1
