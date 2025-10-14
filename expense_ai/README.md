@@ -6,38 +6,40 @@
 
 - Python 3.8+
 - Node.js 14+
-- SQL Server (LAPTOP-F130SI9E\SQLEXPRESS)
+- SQLite (tự động tạo)
 
-## 🎯 Khởi động nhanh
+## 🎯 Khởi động Local
 
-### Cách 1: Dùng file .bat (Windows - Đơn giản nhất)
 ```bash
-start.bat
+RUN.bat
 ```
 
-### Cách 2: Dùng Python script
+- **Frontend**: http://10.67.148.12:3000
+- **Backend**: http://10.67.148.12:5000
+- **Load Test**: http://localhost:8089
+
+## 🌐 Deploy WAN (Render - FREE)
+
 ```bash
-python start.py
+deploy_render.bat
 ```
 
-### Cách 3: Khởi động thủ công
-```bash
-# Terminal 1 - Backend
-python api_server.py
-
-# Terminal 2 - Frontend
-cd frontend
-npm start
-```
-
-## 🌐 Truy cập
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
+Làm theo hướng dẫn trong file `DEPLOY_WAN.md`
 
 ## 🔑 Đăng nhập
 
-Nhập bất kỳ email/password nào để đăng nhập (không cần xác thực)
+- Email: `admin@example.com`
+- Password: `123456`
+
+## 🧪 Load Test 100 Users
+
+```bash
+python test_100_users.py
+```
+
+- Host: URL từ Render hoặc `http://10.67.148.12:5000`
+- Users: 100
+- Spawn rate: 10
 
 ## 📊 Tính năng
 
@@ -50,49 +52,20 @@ Nhập bất kỳ email/password nào để đăng nhập (không cần xác th�
 
 ## 🗄️ Database
 
-- **Server**: LAPTOP-F130SI9E\SQLEXPRESS
-- **Database**: ExpenseDB
-- **Tables**: expenses, incomes, budgets
-
-## 🛠️ Công cụ hữu ích
-
-```bash
-# Xem dữ liệu SQL Server
-python view_sqlserver_data.py
-
-# Xóa toàn bộ dữ liệu
-python clear_data.py
-```
-
-## 📝 Cấu trúc dự án
-
-```
-expense_ai/
-├── api_server.py          # Flask backend
-├── config.py              # SQL Server config
-├── ocr_processor.py       # Gemini OCR
-├── start.bat              # Khởi động (Windows)
-├── start.py               # Khởi động (Python)
-├── src/
-│   ├── db_factory.py
-│   ├── sqlserver_database.py
-│   ├── ai_classifier.py
-│   └── ai_advisor.py
-└── frontend/              # React frontend
-    ├── src/
-    └── package.json
-```
+- **Type**: SQLite
+- **File**: expense_data.db
+- **Tables**: users, sessions, expenses, incomes, budgets, debts, savings_goals, reminders
 
 ## 🎨 Tech Stack
 
 **Backend:**
 - Flask + Flask-CORS
-- SQL Server + pyodbc
+- SQLite
 - Pandas, Scikit-learn
-- Google Gemini AI
+- Google Gemini AI (OCR)
 
 **Frontend:**
-- React + Styled Components
-- Recharts (biểu đồ)
+- React
+- Recharts
 - Axios
-- React Hot Toast
+- Styled Components

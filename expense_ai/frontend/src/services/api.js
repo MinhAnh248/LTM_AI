@@ -1,9 +1,15 @@
 import axios from 'axios';
 
-// LAN: const API_BASE_URL = 'http://10.67.148.12:5000/api';
-// Ngrok: Thay URL bên dưới bằng URL từ ngrok
-// Thay URL bên dưới bằng URL mới từ Ngrok
-const API_BASE_URL = 'https://uniocular-abraham-phrenetically.ngrok-free.dev/api';
+// Chọn 1 trong 3 chế độ:
+const MODE = 'NGROK'; // 'LOCALHOST' | 'LAN' | 'NGROK'
+
+const API_URLS = {
+  LOCALHOST: 'http://localhost:5000/api',
+  LAN: 'http://10.67.148.12:5000/api',
+  NGROK: 'https://bus-isolation-beaver-map.trycloudflare.com/api'
+};
+
+const API_BASE_URL = API_URLS[MODE];
 
 const api = axios.create({
   baseURL: API_BASE_URL,
