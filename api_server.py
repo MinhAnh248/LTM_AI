@@ -2,29 +2,29 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
 from src.auth import AuthManager
-from src.sqlite_db import SQLiteExpenseDB as SQLiteDB
-from src.ai_classifier import AIClassifier
+from src.sqlite_db import SQLiteExpenseDB
+from src.ai_classifier import ExpenseClassifier
 from src.income_manager import IncomeManager
-from src.budget_alert import BudgetAlert
+from src.budget_alert import BudgetAlertManager
 from src.debt_manager import DebtManager
 from src.savings_manager import SavingsManager
 from src.reminder_manager import ReminderManager
-from src.ai_advisor import AIAdvisor
+from src.ai_advisor import ExpenseAdvisor
 from ocr_processor import OCRProcessor
 
 app = Flask(__name__)
 CORS(app)
 
 # Initialize components
-db = SQLiteDB()
+db = SQLiteExpenseDB()
 auth = AuthManager('data/expense_data.db')
-ai_classifier = AIClassifier()
+ai_classifier = ExpenseClassifier()
 income_manager = IncomeManager(db)
-budget_alert = BudgetAlert(db)
+budget_alert = BudgetAlertManager(db)
 debt_manager = DebtManager(db)
 savings_manager = SavingsManager(db)
 reminder_manager = ReminderManager(db)
-ai_advisor = AIAdvisor(db)
+ai_advisor = ExpenseAdvisor(db)
 ocr_processor = OCRProcessor()
 
 @app.route('/api/health', methods=['GET'])
@@ -122,7 +122,7 @@ def predict_category():
     
     data = request.get_json()
     description = data.get('description', '')
-    category = ai_classifier.predict_category(description)
+    category = ai_classifier.classify(description)
     return jsonify({'category': category})
 
 @app.route('/api/summary', methods=['GET'])
@@ -198,4 +198,4 @@ def reminders():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
