@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
-from src.auth import Auth
+from src.auth import AuthManager
 from src.sqlite_db import SQLiteDB
 from src.ai_classifier import AIClassifier
 from src.income_manager import IncomeManager
@@ -17,7 +17,7 @@ CORS(app)
 
 # Initialize components
 db = SQLiteDB()
-auth = Auth(db)
+auth = AuthManager('data/expense_data.db')
 ai_classifier = AIClassifier()
 income_manager = IncomeManager(db)
 budget_alert = BudgetAlert(db)
