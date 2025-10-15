@@ -747,6 +747,9 @@ http://localhost:5000/api/health
 http://10.67.148.12:5000/api/health
 ```
 Nếu trả về JSON → ✅ Backend hoạt động
+cd c:\LTMang_AI\expense_ai\frontend
+npm run build
+
 
 **4. Test từ điện thoại:**
 ```
