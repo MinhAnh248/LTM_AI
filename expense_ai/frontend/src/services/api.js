@@ -6,7 +6,7 @@ const MODE = 'NGROK'; // 'LOCALHOST' | 'LAN' | 'NGROK'
 const API_URLS = {
   LOCALHOST: 'http://localhost:5000/api',
   LAN: 'http://10.67.148.12:5000/api',
-  NGROK: 'https://bus-isolation-beaver-map.trycloudflare.com/api'
+  NGROK: 'https://ltm-ai.onrender.com/api'
 };
 
 const API_BASE_URL = API_URLS[MODE];

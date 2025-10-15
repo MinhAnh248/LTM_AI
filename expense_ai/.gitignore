@@ -13,6 +13,7 @@ build/
 
 # Database
 expense_data.db
+*.db
 
 # Environment
 .env
@@ -32,6 +33,7 @@ npm-debug.log*
 
 # Cloudflare
 cloudflared.exe
+*.exe
 
 # OS
 .DS_Store
