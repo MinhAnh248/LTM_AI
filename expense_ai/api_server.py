@@ -7,16 +7,28 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
-# In-memory storage
-data_store = {
-    'expenses': [],
-    'incomes': [],
-    'budgets': [],
-    'debts': [],
-    'savings': [],
-    'reminders': [],
-    'users': [{'id': 1, 'email': 'admin@example.com', 'password': '123456', 'token': 'demo-token'}]
-}
+DATA_FILE = 'data/lan_data.json'
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {
+        'expenses': [],
+        'incomes': [],
+        'budgets': [],
+        'debts': [],
+        'savings': [],
+        'reminders': [],
+        'users': [{'id': 1, 'email': 'admin@example.com', 'password': '123456', 'token': 'demo-token'}]
+    }
+
+def save_data():
+    os.makedirs('data', exist_ok=True)
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data_store, f, ensure_ascii=False, indent=2)
+
+data_store = load_data()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -31,7 +43,10 @@ def login():
     user = next((u for u in data_store['users'] if u['email'] == email and u['password'] == password), None)
     if user:
         return jsonify({'success': True, 'token': user['token'], 'user': {'id': user['id'], 'email': user['email']}})
-    return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+    # Auto create user if not exists
+    new_user = {'id': len(data_store['users']) + 1, 'email': email, 'password': password, 'token': f'token-{email}'}
+    data_store['users'].append(new_user)
+    return jsonify({'success': True, 'token': new_user['token'], 'user': {'id': new_user['id'], 'email': new_user['email']}})
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -59,7 +74,11 @@ def auth_logout():
 
 @app.route('/api/auth/me', methods=['GET'])
 def auth_me():
-    return jsonify({'id': 1, 'email': 'lan@local', 'full_name': 'LAN User'})
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    user = next((u for u in data_store['users'] if u['token'] == token), None)
+    if user:
+        return jsonify({'id': user['id'], 'email': user['email'], 'full_name': user['email']})
+    return jsonify({'id': 1, 'email': 'guest@example.com', 'full_name': 'Guest'})
 
 @app.route('/api/expenses', methods=['GET', 'POST', 'DELETE'])
 def expenses():
@@ -68,28 +87,32 @@ def expenses():
     elif request.method == 'POST':
         data = request.get_json()
         expense = {
-            'id': len(data_store['expenses']) + 1,
+            'id': max([e['id'] for e in data_store['expenses']], default=0) + 1,
             'date': data.get('date', datetime.now().strftime('%Y-%m-%d')),
             'amount': float(data.get('amount', 0)),
             'description': data.get('description', ''),
             'category': data.get('category', 'khac')
         }
         data_store['expenses'].append(expense)
+        save_data()
         return jsonify({'success': True, 'id': expense['id']})
     elif request.method == 'DELETE':
         data_store['expenses'] = []
+        save_data()
         return jsonify({'success': True})
 
 @app.route('/api/expenses/<int:expense_id>', methods=['DELETE', 'PUT'])
 def expense_detail(expense_id):
     if request.method == 'DELETE':
         data_store['expenses'] = [e for e in data_store['expenses'] if e['id'] != expense_id]
+        save_data()
         return jsonify({'success': True})
     elif request.method == 'PUT':
         data = request.get_json()
         for expense in data_store['expenses']:
             if expense['id'] == expense_id:
                 expense.update(data)
+                save_data()
                 return jsonify({'success': True})
         return jsonify({'success': False, 'error': 'Not found'}), 404
 
@@ -98,20 +121,23 @@ def incomes():
     if request.method == 'GET':
         return jsonify(data_store['incomes'])
     data = request.get_json()
-    income = {'id': len(data_store['incomes']) + 1, **data}
+    income = {'id': max([i['id'] for i in data_store['incomes']], default=0) + 1, **data}
     data_store['incomes'].append(income)
+    save_data()
     return jsonify({'success': True, 'id': income['id']})
 
 @app.route('/api/incomes/<int:income_id>', methods=['DELETE', 'PUT'])
 def income_detail(income_id):
     if request.method == 'DELETE':
         data_store['incomes'] = [i for i in data_store['incomes'] if i['id'] != income_id]
+        save_data()
         return jsonify({'success': True})
     elif request.method == 'PUT':
         data = request.get_json()
         for income in data_store['incomes']:
             if income['id'] == income_id:
                 income.update(data)
+                save_data()
                 return jsonify({'success': True})
         return jsonify({'success': False}), 404
 
@@ -120,8 +146,9 @@ def budgets():
     if request.method == 'GET':
         return jsonify(data_store['budgets'])
     data = request.get_json()
-    budget = {'id': len(data_store['budgets']) + 1, **data}
+    budget = {'id': max([b['id'] for b in data_store['budgets']], default=0) + 1, **data}
     data_store['budgets'].append(budget)
+    save_data()
     return jsonify({'success': True, 'id': budget['id']})
 
 @app.route('/api/budget', methods=['GET', 'POST'])
@@ -243,7 +270,7 @@ def summary():
 @app.route('/api/income-summary', methods=['GET'])
 def income_summary():
     total = sum(i.get('amount', 0) for i in data_store['incomes'])
-    return jsonify({'total': total, 'count': len(data_store['incomes'])})
+    return jsonify({'total_income': total, 'count': len(data_store['incomes'])})
 
 @app.route('/api/category-breakdown', methods=['GET'])
 def category_breakdown():
@@ -251,7 +278,8 @@ def category_breakdown():
     for expense in data_store['expenses']:
         cat = expense.get('category', 'khac')
         categories[cat] = categories.get(cat, 0) + expense['amount']
-    return jsonify(categories)
+    result = [{'category': k, 'amount': v} for k, v in categories.items()]
+    return jsonify(result)
 
 @app.route('/api/daily-spending', methods=['GET'])
 def daily_spending():
@@ -259,7 +287,8 @@ def daily_spending():
     for expense in data_store['expenses']:
         date = expense.get('date', datetime.now().strftime('%Y-%m-%d'))
         daily[date] = daily.get(date, 0) + expense['amount']
-    return jsonify(daily)
+    result = [{'date': k, 'amount': v} for k, v in sorted(daily.items())]
+    return jsonify(result)
 
 @app.route('/api/analysis', methods=['GET'])
 def analysis():
@@ -268,16 +297,19 @@ def analysis():
 @app.route('/api/expenses/clear-all', methods=['DELETE'])
 def clear_all_expenses():
     data_store['expenses'] = []
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/api/create-sample-data', methods=['POST'])
 def create_sample_data():
+    max_id = max([e['id'] for e in data_store['expenses']], default=0)
     sample_expenses = [
-        {'id': 1, 'date': '2024-01-15', 'amount': 50000, 'description': 'Cafe', 'category': 'an uong'},
-        {'id': 2, 'date': '2024-01-16', 'amount': 200000, 'description': 'Grab', 'category': 'di lai'},
-        {'id': 3, 'date': '2024-01-17', 'amount': 150000, 'description': 'Sach', 'category': 'hoc tap'}
+        {'id': max_id + 1, 'date': '2024-01-15', 'amount': 50000, 'description': 'Cafe', 'category': 'an uong'},
+        {'id': max_id + 2, 'date': '2024-01-16', 'amount': 200000, 'description': 'Grab', 'category': 'di lai'},
+        {'id': max_id + 3, 'date': '2024-01-17', 'amount': 150000, 'description': 'Sach', 'category': 'hoc tap'}
     ]
     data_store['expenses'].extend(sample_expenses)
+    save_data()
     return jsonify({'success': True, 'count': len(sample_expenses)})
 
 @app.route('/api/debts', methods=['GET', 'POST'])
@@ -285,13 +317,15 @@ def debts():
     if request.method == 'GET':
         return jsonify(data_store['debts'])
     data = request.get_json()
-    debt = {'id': len(data_store['debts']) + 1, **data}
+    debt = {'id': max([d['id'] for d in data_store['debts']], default=0) + 1, **data}
     data_store['debts'].append(debt)
+    save_data()
     return jsonify({'success': True, 'id': debt['id']})
 
 @app.route('/api/debts/<int:debt_id>', methods=['DELETE'])
 def debt_detail(debt_id):
     data_store['debts'] = [d for d in data_store['debts'] if d['id'] != debt_id]
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/api/debts/<int:debt_id>/payment', methods=['POST'])
@@ -300,6 +334,7 @@ def debt_payment(debt_id):
     for debt in data_store['debts']:
         if debt['id'] == debt_id:
             debt['paid'] = debt.get('paid', 0) + data.get('amount', 0)
+            save_data()
             return jsonify({'success': True})
     return jsonify({'success': False}), 404
 
@@ -307,7 +342,7 @@ def debt_payment(debt_id):
 def debt_summary():
     total = sum(d.get('amount', 0) for d in data_store['debts'])
     paid = sum(d.get('paid', 0) for d in data_store['debts'])
-    return jsonify({'total': total, 'paid': paid, 'remaining': total - paid})
+    return jsonify({'total_debt': total - paid, 'total': total, 'paid': paid, 'remaining': total - paid})
 
 @app.route('/api/payment-history', methods=['GET'])
 def payment_history():
@@ -318,13 +353,15 @@ def savings_goals():
     if request.method == 'GET':
         return jsonify(data_store['savings'])
     data = request.get_json()
-    saving = {'id': len(data_store['savings']) + 1, **data}
+    saving = {'id': max([s['id'] for s in data_store['savings']], default=0) + 1, **data}
     data_store['savings'].append(saving)
+    save_data()
     return jsonify({'success': True, 'id': saving['id']})
 
 @app.route('/api/savings-goals/<int:goal_id>', methods=['DELETE'])
 def savings_goal_detail(goal_id):
     data_store['savings'] = [s for s in data_store['savings'] if s['id'] != goal_id]
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/api/savings-goals/<int:goal_id>/deposit', methods=['POST'])
@@ -333,6 +370,7 @@ def savings_deposit(goal_id):
     for saving in data_store['savings']:
         if saving['id'] == goal_id:
             saving['current'] = saving.get('current', 0) + data.get('amount', 0)
+            save_data()
             return jsonify({'success': True})
     return jsonify({'success': False}), 404
 
@@ -340,7 +378,7 @@ def savings_deposit(goal_id):
 def savings_summary():
     total_goal = sum(s.get('target', 0) for s in data_store['savings'])
     total_saved = sum(s.get('current', 0) for s in data_store['savings'])
-    return jsonify({'total_goal': total_goal, 'total_saved': total_saved})
+    return jsonify({'total_savings': total_saved, 'total_goal': total_goal, 'total_saved': total_saved})
 
 @app.route('/api/deposit-history', methods=['GET'])
 def deposit_history():
@@ -355,13 +393,15 @@ def reminders():
     if request.method == 'GET':
         return jsonify(data_store['reminders'])
     data = request.get_json()
-    reminder = {'id': len(data_store['reminders']) + 1, 'completed': False, **data}
+    reminder = {'id': max([r['id'] for r in data_store['reminders']], default=0) + 1, 'completed': False, **data}
     data_store['reminders'].append(reminder)
+    save_data()
     return jsonify({'success': True, 'id': reminder['id']})
 
 @app.route('/api/reminders/<int:reminder_id>', methods=['DELETE'])
 def reminder_detail(reminder_id):
     data_store['reminders'] = [r for r in data_store['reminders'] if r['id'] != reminder_id]
+    save_data()
     return jsonify({'success': True})
 
 @app.route('/api/reminders/<int:reminder_id>/complete', methods=['POST'])
@@ -369,6 +409,7 @@ def complete_reminder(reminder_id):
     for reminder in data_store['reminders']:
         if reminder['id'] == reminder_id:
             reminder['completed'] = True
+            save_data()
             return jsonify({'success': True})
     return jsonify({'success': False}), 404
 
