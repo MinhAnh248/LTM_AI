@@ -1,15 +1,16 @@
 @echo off
-title Expense AI - LAN Mode
+title Expense AI - LAN Mode (No Auth)
 color 0B
 
 echo.
 echo ========================================
-echo   EXPENSE AI - LAN MODE
+echo   EXPENSE AI - LAN MODE (NO LOGIN)
 echo ========================================
 echo.
-echo Chay tren mang noi bo (LAN)
-echo Moi nguoi trong cung WiFi co the truy cap
-echo.
+
+REM Get local IP
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do set IP=%%a
+set IP=%IP:~1%
 
 REM Kill old processes
 echo [1/3] Cleaning up...
@@ -19,30 +20,28 @@ timeout /t 2 /nobreak >nul
 
 REM Start Backend
 echo [2/3] Starting Backend...
-start "Backend API" cmd /k "title Backend API && cd /d %~dp0.. && python api_server.py"
+start "Backend API" cmd /k "title Backend API && cd /d %~dp0 && python api_server.py"
 timeout /t 5 /nobreak >nul
 
 REM Start Frontend
 echo [3/3] Starting Frontend...
-start "Frontend React" cmd /k "title Frontend React && cd /d %~dp0..\frontend && npm install && set BROWSER=none && npm start"
+start "Frontend React" cmd /k "title Frontend React && cd /d %~dp0frontend && npm install && set BROWSER=none && npm start"
 timeout /t 15 /nobreak >nul
 
 echo.
 echo ========================================
-echo   LAN MODE STARTED!
+echo   LAN MODE STARTED - NO LOGIN REQUIRED
 echo ========================================
 echo.
-echo Truy cap tu bat ky thiet bi nao trong mang:
+echo [+] Frontend:  http://%IP%:3000
+echo [+] Backend:   http://%IP%:5000
 echo.
-echo [+] Frontend:  http://10.109.66.12:3000
-echo [+] Backend:   http://10.67.148.12:5000
-echo.
-echo Login: admin@example.com / 123456
+echo Khong can dang nhap - Truy cap truc tiep!
 echo.
 echo ========================================
 timeout /t 3 /nobreak >nul
 
-start http://10.67.148.12:3000
+start http://localhost:3000
 
 echo.
 echo [+] Browser opened
