@@ -50,11 +50,11 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
     if (isWANMode) {
-      // WAN mode: Check if user is logged in
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      
+      // WAN mode: Require login
       if (token && userData) {
         try {
           setUser(JSON.parse(userData));
@@ -65,10 +65,14 @@ function App() {
       }
     } else {
       // LAN mode: Auto login
-      const lanUser = { id: 1, email: 'lan@local', full_name: 'LAN User' };
-      localStorage.setItem('token', 'lan-mode');
-      localStorage.setItem('user', JSON.stringify(lanUser));
-      setUser(lanUser);
+      if (!token || !userData) {
+        const lanUser = { id: 1, email: 'lan@local', full_name: 'LAN User' };
+        localStorage.setItem('token', 'lan-mode');
+        localStorage.setItem('user', JSON.stringify(lanUser));
+        setUser(lanUser);
+      } else {
+        setUser(JSON.parse(userData));
+      }
     }
     setLoading(false);
   }, []);
@@ -87,7 +91,7 @@ function App() {
     return <div>Đang tải...</div>;
   }
 
-  if (isWANMode && !user) {
+  if (!user) {
     return (
       <>
         <LoginPage onLogin={handleLogin} />
@@ -95,8 +99,6 @@ function App() {
       </>
     );
   }
-
-
 
   return (
     <Router>
