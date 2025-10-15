@@ -75,11 +75,15 @@ def expense_detail(expense_id):
 @app.route('/api/incomes', methods=['GET', 'POST'])
 def incomes():
     if request.method == 'GET':
-        return jsonify(data_store.get('incomes', []))
+        return jsonify(data_store['incomes'])
     data = request.get_json()
-    if 'incomes' not in data_store:
-        data_store['incomes'] = []
-    income = {'id': len(data_store['incomes']) + 1, **data}
+    income = {
+        'id': len(data_store['incomes']) + 1,
+        'date': data.get('date', datetime.now().strftime('%Y-%m-%d')),
+        'amount': float(data.get('amount', 0)),
+        'source': data.get('source', ''),
+        'description': data.get('description', '')
+    }
     data_store['incomes'].append(income)
     return jsonify({'success': True, 'id': income['id']})
 
@@ -228,8 +232,8 @@ def summary():
 
 @app.route('/api/income-summary', methods=['GET'])
 def income_summary():
-    total = sum(i.get('amount', 0) for i in data_store.get('incomes', []))
-    return jsonify({'total_income': total, 'count': len(data_store.get('incomes', []))})
+    total = sum(i.get('amount', 0) for i in data_store['incomes'])
+    return jsonify({'total_income': total, 'count': len(data_store['incomes'])})
 
 @app.route('/api/debt-summary', methods=['GET'])
 def debt_summary():
@@ -271,10 +275,10 @@ def spending_status():
 @app.route('/api/incomes/<int:income_id>', methods=['DELETE', 'PUT'])
 def income_detail(income_id):
     if request.method == 'DELETE':
-        data_store['incomes'] = [i for i in data_store.get('incomes', []) if i['id'] != income_id]
+        data_store['incomes'] = [i for i in data_store['incomes'] if i['id'] != income_id]
         return jsonify({'success': True})
     data = request.get_json()
-    for income in data_store.get('incomes', []):
+    for income in data_store['incomes']:
         if income['id'] == income_id:
             income.update(data)
             return jsonify({'success': True})
