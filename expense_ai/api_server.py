@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
 from src.auth import AuthManager
-from src.sqlite_db import SQLiteDB
+from src.sqlite_db import SQLiteExpenseDB as SQLiteDB
 from src.ai_classifier import AIClassifier
 from src.income_manager import IncomeManager
 from src.budget_alert import BudgetAlert
