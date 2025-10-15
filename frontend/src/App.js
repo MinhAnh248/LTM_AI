@@ -49,18 +49,10 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (error) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
+    const lanUser = { id: 1, email: 'lan@local', full_name: 'LAN User' };
+    localStorage.setItem('token', 'lan-mode');
+    localStorage.setItem('user', JSON.stringify(lanUser));
+    setUser(lanUser);
     setLoading(false);
   }, []);
 
@@ -78,14 +70,7 @@ function App() {
     return <div>Đang tải...</div>;
   }
 
-  if (!user) {
-    return (
-      <>
-        <LoginPage onLogin={handleLogin} />
-        <Toaster position="top-right" />
-      </>
-    );
-  }
+
 
   return (
     <Router>

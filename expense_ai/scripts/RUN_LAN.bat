@@ -19,12 +19,12 @@ timeout /t 2 /nobreak >nul
 
 REM Start Backend
 echo [2/3] Starting Backend...
-start "Backend API" cmd /k "title Backend API && cd /d %~dp0 && python api_server.py"
+start "Backend API" cmd /k "title Backend API && cd /d %~dp0.. && python api_server.py"
 timeout /t 5 /nobreak >nul
 
 REM Start Frontend
 echo [3/3] Starting Frontend...
-start "Frontend React" cmd /k "title Frontend React && cd /d %~dp0frontend && npm start"
+start "Frontend React" cmd /k "title Frontend React && cd /d %~dp0..\frontend && npm start"
 timeout /t 10 /nobreak >nul
 
 echo.
