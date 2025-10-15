@@ -14,6 +14,7 @@ import BudgetPage from './pages/BudgetPage';
 import ReportPage from './pages/ReportPage';
 import HistoryPage from './pages/HistoryPage';
 import LoginPage from './pages/LoginPage';
+import { isWANMode } from './services/api';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -49,10 +50,26 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const lanUser = { id: 1, email: 'lan@local', full_name: 'LAN User' };
-    localStorage.setItem('token', 'lan-mode');
-    localStorage.setItem('user', JSON.stringify(lanUser));
-    setUser(lanUser);
+    if (isWANMode) {
+      // WAN mode: Check if user is logged in
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+      
+      if (token && userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }
+    } else {
+      // LAN mode: Auto login
+      const lanUser = { id: 1, email: 'lan@local', full_name: 'LAN User' };
+      localStorage.setItem('token', 'lan-mode');
+      localStorage.setItem('user', JSON.stringify(lanUser));
+      setUser(lanUser);
+    }
     setLoading(false);
   }, []);
 
@@ -68,6 +85,15 @@ function App() {
 
   if (loading) {
     return <div>Đang tải...</div>;
+  }
+
+  if (isWANMode && !user) {
+    return (
+      <>
+        <LoginPage onLogin={handleLogin} />
+        <Toaster position="top-right" />
+      </>
+    );
   }
 
 

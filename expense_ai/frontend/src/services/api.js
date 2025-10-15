@@ -16,6 +16,9 @@ if (hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
 
 const API_BASE_URL = API_URLS[MODE];
 
+// Export MODE for use in App.js
+export const isWANMode = MODE === 'NGROK';
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
