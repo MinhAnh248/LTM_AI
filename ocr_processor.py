@@ -135,6 +135,50 @@ Nếu không tìm thấy thông tin, hãy để giá trị rỗng ("") hoặc 0.
         }
         return category_mapping.get(category.lower(), 'khac')
 
+class OCRProcessor:
+    """Wrapper class for compatibility with api_server"""
+    def __init__(self):
+        self.gemini = GeminiOCRProcessor()
+    
+    def process_receipt(self, image_file):
+        """Process receipt from uploaded file"""
+        try:
+            # Save uploaded file temporarily
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp:
+                image_file.save(tmp.name)
+                tmp_path = tmp.name
+            
+            # Process with Gemini
+            result = self.gemini.extract_receipt_data(tmp_path)
+            
+            # Clean up
+            import os
+            os.unlink(tmp_path)
+            
+            if result.get('success'):
+                return {
+                    'success': True,
+                    'data': {
+                        'amount': result.get('total_amount', 0),
+                        'description': result.get('description', ''),
+                        'category': result.get('category', 'khac'),
+                        'date': result.get('merchant_info', {}).get('date', datetime.now().strftime('%Y-%m-%d'))
+                    },
+                    'raw_text': result.get('raw_text', ''),
+                    'items': result.get('items', [])
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': result.get('error', 'Unknown error')
+                }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+
 # Singleton instance
 gemini_ocr_processor = GeminiOCRProcessor()
 
