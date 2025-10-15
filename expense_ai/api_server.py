@@ -34,22 +34,24 @@ def health_check():
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
-    result = auth.register(data['email'], data['password'])
+    result = auth.register_user(data['email'], data['password'], data.get('full_name', ''), data.get('phone', ''))
     return jsonify(result)
 
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
-    result = auth.login(data['email'], data['password'])
+    result = auth.login_user(data['email'], data['password'])
     return jsonify(result)
 
 @app.route('/api/expenses', methods=['GET', 'POST'])
 def expenses():
     token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    user_id = auth.verify_token(token)
+    result = auth.verify_token(token)
     
-    if not user_id:
+    if not result['success']:
         return jsonify({'error': 'Unauthorized'}), 401
+    
+    user_id = result['user_id']
     
     if request.method == 'GET':
         expenses = db.get_expenses(user_id)
@@ -62,10 +64,12 @@ def expenses():
 @app.route('/api/incomes', methods=['GET', 'POST'])
 def incomes():
     token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    user_id = auth.verify_token(token)
+    result = auth.verify_token(token)
     
-    if not user_id:
+    if not result['success']:
         return jsonify({'error': 'Unauthorized'}), 401
+    
+    user_id = result['user_id']
     
     if request.method == 'GET':
         incomes = income_manager.get_incomes(user_id)
@@ -78,10 +82,12 @@ def incomes():
 @app.route('/api/budgets', methods=['GET', 'POST'])
 def budgets():
     token = request.headers.get('Authorization', '').replace('Bearer ', '')
-    user_id = auth.verify_token(token)
+    result = auth.verify_token(token)
     
-    if not user_id:
+    if not result['success']:
         return jsonify({'error': 'Unauthorized'}), 401
+    
+    user_id = result['user_id']
     
     if request.method == 'GET':
         budgets = budget_alert.get_budgets(user_id)
