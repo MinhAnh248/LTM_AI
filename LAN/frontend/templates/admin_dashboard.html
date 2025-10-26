@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Admin Dashboard - LAN Network</title>
+    <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 Admin Control Panel</h1>
+            <div class="network-info">
+                <span>LAN Network: 192.168.10.x</span>
+                <span id="server-time"></span>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Stats Cards -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <h3>👥 Total Users</h3>
+                    <div class="stat-number" id="total-users">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>💰 Total Expenses</h3>
+                    <div class="stat-number" id="total-expenses">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📊 Active Sessions</h3>
+                    <div class="stat-number" id="active-sessions">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>🔄 Server Status</h3>
+                    <div class="stat-number status-online">ONLINE</div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h2>🎛️ System Controls</h2>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="viewAllUsers()">👥 View All Users</button>
+                    <button class="btn btn-info" onclick="getSystemStats()">📊 System Statistics</button>
+                    <button class="btn btn-warning" onclick="createBackup()">💾 Create Backup</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                </div>
+            </div>
+
+            <!-- Data Display -->
+            <div class="data-display">
+                <h2>📋 System Information</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showTab('users')">Users</button>
+                    <button class="tab-btn" onclick="showTab('stats')">Statistics</button>
+                    <button class="tab-btn" onclick="showTab('logs')">System Logs</button>
+                </div>
+                <div class="tab-content">
+                    <div id="users-tab" class="tab-pane active">
+                        <div id="users-data">Click "View All Users" to load data...</div>
+                    </div>
+                    <div id="stats-tab" class="tab-pane">
+                        <div id="stats-data">Click "System Statistics" to load data...</div>
+                    </div>
+                    <div id="logs-tab" class="tab-pane">
+                        <div id="logs-data">System logs will appear here...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/admin.js"></script>
+</body>
+</html>
