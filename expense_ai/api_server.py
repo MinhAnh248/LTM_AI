@@ -3,6 +3,9 @@ from flask_cors import CORS
 import os
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -142,7 +145,9 @@ def scan_receipt():
         image_file = request.files['image']
         image_data = base64.b64encode(image_file.read()).decode('utf-8')
         
-        api_key = 'AIzaSyBF7jxAXLiAQhmR8UzFBPT9tTcNmQGihhw'
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            raise Exception('GEMINI_API_KEY not found')
         url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={api_key}'
         
         payload = {
