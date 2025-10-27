@@ -1,30 +1,15 @@
 import axios from 'axios';
 
-const API_URLS = {
-  LOCALHOST: 'http://localhost:5000/api',
-  LAN: 'http://10.67.148.12:5000/api',
-  NGROK: 'https://ltm-ai.onrender.com/api'
-};
+const API_BASE_URL = 'http://localhost:5000/api';
 
-const hostname = window.location.hostname;
-let MODE = 'LOCALHOST';
-if (hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
-  MODE = 'LAN';
-} else if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-  MODE = 'NGROK';
-}
-
-const API_BASE_URL = API_URLS[MODE];
-
-// Export MODE for use in App.js
-export const isWANMode = MODE === 'NGROK';
+// Export for compatibility
+export const isWANMode = false;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 });
 
@@ -37,14 +22,10 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle token expiration and timeout
+// Handle token expiration
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      console.error('Request timeout - server may be sleeping');
-      return Promise.reject(new Error('Server đang khởi động, vui lòng thử lại sau 30s'));
-    }
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

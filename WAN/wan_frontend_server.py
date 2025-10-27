@@ -53,6 +53,6 @@ def wan_summary():
 
 if __name__ == '__main__':
     print("🌐 Starting WAN Server with Expense AI Frontend")
-    print("📍 Access: http://localhost:7000")
+    print("📍 Access: http://localhost:3000")
     print("🎨 Using React frontend from expense_ai")
-    app.run(host='0.0.0.0', port=7000, debug=True)
+    app.run(host='0.0.0.0', port=3000, debug=True)

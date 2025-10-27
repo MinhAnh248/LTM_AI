@@ -1,14 +1,11 @@
 @echo off
-title Expense AI - LAN Mode
-color 0B
+title Expense AI - Local Mode
+color 0A
 
 echo.
 echo ========================================
-echo   EXPENSE AI - LAN MODE
+echo   EXPENSE AI - LOCAL MODE
 echo ========================================
-echo.
-echo Chay tren mang noi bo (LAN)
-echo Moi nguoi trong cung WiFi co the truy cap
 echo.
 
 REM Kill old processes
@@ -29,20 +26,20 @@ timeout /t 15 /nobreak >nul
 
 echo.
 echo ========================================
-echo   LAN MODE STARTED!
+echo   LOCAL MODE STARTED!
 echo ========================================
 echo.
-echo Truy cap tu bat ky thiet bi nao trong mang:
+echo Access URLs:
 echo.
-echo [+] Frontend:  http://10.109.66.12:3000
-echo [+] Backend:   http://10.67.148.12:5000
+echo [+] Frontend:  http://localhost:3000
+echo [+] Backend:   http://localhost:5000
 echo.
 echo Login: admin@example.com / 123456
 echo.
 echo ========================================
 timeout /t 3 /nobreak >nul
 
-start http://10.67.148.12:3000
+start http://localhost:3000
 
 echo.
 echo [+] Browser opened
