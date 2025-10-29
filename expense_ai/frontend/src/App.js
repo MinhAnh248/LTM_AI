@@ -13,7 +13,8 @@ import RemindersPage from './pages/RemindersPage';
 import BudgetPage from './pages/BudgetPage';
 import ReportPage from './pages/ReportPage';
 import HistoryPage from './pages/HistoryPage';
-import LoginPage from './pages/LoginPage';
+import AuthPage from './pages/AuthPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import { isWANMode } from './services/api';
 
 const AppContainer = styled.div`
@@ -91,36 +92,120 @@ function App() {
     return <div>Đang tải...</div>;
   }
 
-  if (!user) {
-    return (
-      <>
-        <LoginPage onLogin={handleLogin} />
-        <Toaster position="top-right" />
-      </>
-    );
-  }
-
   return (
     <Router>
-      <AppContainer>
-        <Sidebar user={user} onLogout={handleLogout} />
-        <MainContent>
-          <ContentWrapper>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/add" element={<TransactionForm />} />
-              <Route path="/income" element={<IncomePage />} />
-              <Route path="/debt" element={<DebtPage />} />
-              <Route path="/savings" element={<SavingsPage />} />
-              <Route path="/reminders" element={<RemindersPage />} />
-              <Route path="/budget" element={<BudgetPage />} />
-              <Route path="/reports" element={<ReportPage />} />
-              <Route path="/history" element={<HistoryPage />} />
-            </Routes>
-          </ContentWrapper>
-        </MainContent>
-        <Toaster position="top-right" />
-      </AppContainer>
+      <Routes>
+        <Route path="/" element={<AuthPage />} />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <Dashboard />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/add" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <TransactionForm />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/income" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <IncomePage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/debt" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <DebtPage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/savings" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <SavingsPage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/reminders" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <RemindersPage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/budget" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <BudgetPage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/reports" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <ReportPage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+        <Route path="/history" element={
+          <ProtectedRoute>
+            <AppContainer>
+              <Sidebar user={user} onLogout={handleLogout} />
+              <MainContent>
+                <ContentWrapper>
+                  <HistoryPage />
+                </ContentWrapper>
+              </MainContent>
+            </AppContainer>
+          </ProtectedRoute>
+        } />
+      </Routes>
+      <Toaster position="top-right" />
     </Router>
   );
 }
