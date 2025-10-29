@@ -367,10 +367,14 @@ def register():
     }
     data_store['users'].append(new_user)
     
+    # DEMO: Trả OTP trong response (production nên xóa dòng này)
+    otp_code = mfa_auth.otp_storage.get(email, {}).get('otp', '')
+    
     return jsonify({
         'success': True,
         'message': 'OTP sent to your email. Please verify to complete registration',
-        'requires_otp': True
+        'requires_otp': True,
+        'otp_demo': otp_code  # DEMO only - xóa trong production
     })
 
 @app.route('/api/auth/send-otp', methods=['POST'])

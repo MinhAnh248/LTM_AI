@@ -182,7 +182,12 @@ const AuthPage = () => {
 
       if (data.success && data.requires_otp) {
         setShowOTP(true);
-        toast.success('OTP đã được gửi đến email của bạn!');
+        // Hiển thị OTP demo
+        if (data.otp_demo) {
+          toast.success(`OTP của bạn: ${data.otp_demo}`, { duration: 10000 });
+        } else {
+          toast.success('OTP đã được gửi đến email của bạn!');
+        }
       } else if (data.success) {
         toast.success('Đăng ký thành công!');
         setIsLogin(true);
