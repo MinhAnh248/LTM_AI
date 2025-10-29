@@ -418,6 +418,14 @@ def verify_otp():
 def auth_logout():
     return jsonify({'success': True})
 
+@app.route('/api/dev/reset-users', methods=['POST'])
+def reset_users():
+    """Reset users - CHỈ DÙNG CHO DEVELOPMENT"""
+    data_store['users'] = [{'id': 1, 'email': 'admin@example.com', 'password': '123456', 'token': 'demo-token'}]
+    return jsonify({'success': True, 'message': 'All users reset'})
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
+    # Import os if not already imported
+    import os
     app.run(host='0.0.0.0', port=port, debug=False)
