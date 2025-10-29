@@ -16,13 +16,66 @@ class MFAAuth:
         return ''.join(random.choices(string.digits, k=length))
     
     def send_otp_email(self, email, otp):
-        """Gửi OTP qua email (demo - in ra console)"""
-        print(f"\n{'='*50}")
-        print(f"📧 OTP Email sent to: {email}")
-        print(f"🔐 Your OTP code: {otp}")
-        print(f"⏰ Valid for {self.otp_expiry_minutes} minutes")
-        print(f"{'='*50}\n")
-        return True
+        """Gửi OTP qua email"""
+        import os
+        
+        # Lấy cấu hình email từ environment variables
+        smtp_email = os.getenv('SMTP_EMAIL')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+        
+        # Nếu không có cấu hình, in ra console
+        if not smtp_email or not smtp_password:
+            print(f"\n{'='*50}")
+            print(f"📧 OTP Email sent to: {email}")
+            print(f"🔐 Your OTP code: {otp}")
+            print(f"⏰ Valid for {self.otp_expiry_minutes} minutes")
+            print(f"{'='*50}\n")
+            return True
+        
+        # Gửi email thật
+        try:
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
+            
+            message = MIMEMultipart()
+            message['From'] = smtp_email
+            message['To'] = email
+            message['Subject'] = 'Expense AI - Mã xác thực OTP'
+            
+            body = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h2 style="color: #667eea;">🔐 Mã xác thực OTP</h2>
+                        <p>Xin chào,</p>
+                        <p>Mã OTP của bạn là:</p>
+                        <div style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+                            {otp}
+                        </div>
+                        <p>Mã này có hiệu lực trong <strong>{self.otp_expiry_minutes} phút</strong>.</p>
+                        <p>Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.</p>
+                        <hr style="margin: 20px 0;">
+                        <p style="color: #666; font-size: 12px;">Expense AI - Quản lý chi tiêu thông minh</p>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            message.attach(MIMEText(body, 'html'))
+            
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.starttls()
+                server.login(smtp_email, smtp_password)
+                server.send_message(message)
+            
+            print(f"✅ OTP sent to {email}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Failed to send email: {e}")
+            print(f"📧 OTP for {email}: {otp}")
+            return True
     
     def create_otp(self, email):
         """Tạo và lưu OTP cho email"""
