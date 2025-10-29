@@ -57,13 +57,29 @@ def login():
 def auth_me():
     return jsonify({'id': 1, 'email': 'guest@example.com', 'full_name': 'Guest'})
 
+def get_user_id_from_token():
+    """Lấy user_id từ token"""
+    token = request.headers.get('Authorization')
+    if not token:
+        return None
+    user = next((u for u in data_store['users'] if u.get('token') == token), None)
+    return user['id'] if user else None
+
 @app.route('/api/expenses', methods=['GET', 'POST'])
 def expenses():
+    user_id = get_user_id_from_token()
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
     if request.method == 'GET':
-        return jsonify(data_store['expenses'])
+        # Chỉ trả expenses của user hiện tại
+        user_expenses = [e for e in data_store['expenses'] if e.get('user_id') == user_id]
+        return jsonify(user_expenses)
+    
     data = request.get_json()
     expense = {
         'id': len(data_store['expenses']) + 1,
+        'user_id': user_id,  # Thêm user_id
         'date': data.get('date', datetime.now().strftime('%Y-%m-%d')),
         'amount': float(data.get('amount', 0)),
         'description': data.get('description', ''),
@@ -86,11 +102,18 @@ def expense_detail(expense_id):
 
 @app.route('/api/incomes', methods=['GET', 'POST'])
 def incomes():
+    user_id = get_user_id_from_token()
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
     if request.method == 'GET':
-        return jsonify(data_store['incomes'])
+        user_incomes = [i for i in data_store['incomes'] if i.get('user_id') == user_id]
+        return jsonify(user_incomes)
+    
     data = request.get_json()
     income = {
         'id': len(data_store['incomes']) + 1,
+        'user_id': user_id,
         'date': data.get('date', datetime.now().strftime('%Y-%m-%d')),
         'amount': float(data.get('amount', 0)),
         'source': data.get('source', ''),
@@ -206,8 +229,17 @@ def predict_category():
 
 @app.route('/api/summary', methods=['GET'])
 def summary():
-    total = sum(e['amount'] for e in data_store['expenses'])
-    return jsonify({'total': total, 'count': len(data_store['expenses']), 'average': total / len(data_store['expenses']) if data_store['expenses'] else 0})
+    user_id = get_user_id_from_token()
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    user_expenses = [e for e in data_store['expenses'] if e.get('user_id') == user_id]
+    total = sum(e['amount'] for e in user_expenses)
+    return jsonify({
+        'total': total,
+        'count': len(user_expenses),
+        'average': total / len(user_expenses) if user_expenses else 0
+    })
 
 @app.route('/api/income-summary', methods=['GET'])
 def income_summary():
