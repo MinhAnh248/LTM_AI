@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 from ocr_processor import OCRProcessor
+from mfa_auth import mfa_auth
 
 load_dotenv()
 
@@ -348,14 +349,66 @@ def create_sample_data():
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
+    email = data.get('email')
+    
+    # Check if user exists
+    if any(u['email'] == email for u in data_store['users']):
+        return jsonify({'success': False, 'message': 'Email already registered'}), 400
+    
+    # Send OTP for verification
+    result = mfa_auth.create_otp(email)
+    
+    # Store pending user
     new_user = {
         'id': len(data_store['users']) + 1,
-        'email': data.get('email'),
+        'email': email,
         'password': data.get('password'),
-        'token': f'token-{len(data_store["users"]) + 1}'
+        'verified': False
     }
     data_store['users'].append(new_user)
-    return jsonify({'success': True, 'token': new_user['token'], 'user': {'id': new_user['id'], 'email': new_user['email']}})
+    
+    return jsonify({
+        'success': True,
+        'message': 'OTP sent to your email. Please verify to complete registration',
+        'requires_otp': True
+    })
+
+@app.route('/api/auth/send-otp', methods=['POST'])
+def send_otp():
+    data = request.get_json()
+    email = data.get('email')
+    
+    if not email:
+        return jsonify({'success': False, 'message': 'Email required'}), 400
+    
+    result = mfa_auth.create_otp(email)
+    return jsonify(result)
+
+@app.route('/api/auth/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    email = data.get('email')
+    otp = data.get('otp')
+    
+    if not email or not otp:
+        return jsonify({'success': False, 'message': 'Email and OTP required'}), 400
+    
+    result = mfa_auth.verify_otp(email, otp)
+    
+    if result['success']:
+        # Mark user as verified
+        for user in data_store['users']:
+            if user['email'] == email:
+                user['verified'] = True
+                user['token'] = f'token-{user["id"]}'
+                return jsonify({
+                    'success': True,
+                    'message': 'Verification successful',
+                    'token': user['token'],
+                    'user': {'id': user['id'], 'email': user['email']}
+                })
+    
+    return jsonify(result), 400
 
 @app.route('/api/auth/logout', methods=['POST'])
 def auth_logout():
