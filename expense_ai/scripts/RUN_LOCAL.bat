@@ -34,6 +34,7 @@ echo.
 echo [+] Frontend:  http://localhost:3000
 echo [+] Backend:   http://localhost:5000
 echo [+] API Test:  python test_api.py
+echo [+] OCR Test:  python test_ocr.py
 echo.
 echo Features:
 echo [+] Receipt OCR scanning with Gemini AI

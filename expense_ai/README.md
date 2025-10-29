@@ -2,10 +2,11 @@
 
 ## ✨ Tính năng chính
 
-- 📸 **Quét hóa đơn tự động** với Gemini AI OCR
-- 🤖 **Phân loại danh mục thông minh** 
+- 📸 **Quét hóa đơn tự động** với Gemini AI OCR (tích hợp từ Cong-Nghe-OCR-Quet-Hoa-Don)
+- 🤖 **Phân loại danh mục thông minh** dựa trên tên cửa hàng
 - 📊 **Thống kê chi tiêu trực quan**
 - 💾 **Lưu trữ local** không cần internet (trừ OCR)
+- 🏪 **Nhận diện cửa hàng** và tự động phân loại
 
 ## 🚀 Cách chạy
 
@@ -34,7 +35,11 @@
 ## 🔧 Test API
 
 ```cmd
+# Test các endpoint cơ bản
 python test_api.py
+
+# Test OCR với ảnh mẫu
+python test_ocr.py
 ```
 
 ## 📁 Cấu trúc

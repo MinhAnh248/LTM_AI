@@ -4,11 +4,19 @@ import os
 import json
 from datetime import datetime
 from dotenv import load_dotenv
+from ocr_processor import OCRProcessor
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize OCR processor
+try:
+    ocr_processor = OCRProcessor()
+except Exception as e:
+    print(f"Warning: OCR processor not available: {e}")
+    ocr_processor = None
 
 # In-memory storage for WAN
 data_store = {
@@ -140,75 +148,40 @@ def scan_receipt():
     if 'image' not in request.files:
         return jsonify({'success': False, 'error': 'No image'}), 400
     
-    try:
-        import base64
-        image_file = request.files['image']
-        image_data = base64.b64encode(image_file.read()).decode('utf-8')
-        
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-            raise Exception('GEMINI_API_KEY not found')
-        url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={api_key}'
-        
-        payload = {
-            'contents': [{
-                'role': 'user',
-                'parts': [
-                    {'text': 'Phân tích hóa đơn và trả về JSON: storeName, date (YYYY-MM-DD), total (số), items (array: name, quantity, price)'},
-                    {'inline_data': {'mime_type': 'image/jpeg', 'data': image_data}}
-                ]
-            }],
-            'generationConfig': {
-                'responseMimeType': 'application/json',
-                'responseSchema': {
-                    'type': 'OBJECT',
-                    'properties': {
-                        'storeName': {'type': 'STRING'},
-                        'date': {'type': 'STRING'},
-                        'total': {'type': 'NUMBER'},
-                        'items': {
-                            'type': 'ARRAY',
-                            'items': {
-                                'type': 'OBJECT',
-                                'properties': {
-                                    'name': {'type': 'STRING'},
-                                    'quantity': {'type': 'NUMBER'},
-                                    'price': {'type': 'NUMBER'}
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        import requests
-        response = requests.post(url, json=payload)
-        result = response.json()
-        receipt_data = json.loads(result['candidates'][0]['content']['parts'][0]['text'])
-        
+    if not ocr_processor:
         return jsonify({
-            'success': True,
-            'data': {
-                'amount': receipt_data.get('total', 0),
-                'description': receipt_data.get('storeName', 'Hóa đơn'),
-                'category': 'an uong',
-                'date': receipt_data.get('date', datetime.now().strftime('%Y-%m-%d')),
-                'items': receipt_data.get('items', [])
-            },
-            'raw_text': str(receipt_data)
-        })
-    except Exception as e:
-        return jsonify({
-            'success': True,
+            'success': False,
+            'error': 'OCR service not available',
             'data': {
                 'amount': 50000,
                 'description': 'Hóa đơn',
-                'category': 'an uong',
+                'category': 'khac',
+                'date': datetime.now().strftime('%Y-%m-%d')
+            }
+        }), 500
+    
+    try:
+        image_file = request.files['image']
+        result = ocr_processor.process_receipt(image_file)
+        
+        return jsonify({
+            'success': result['success'],
+            'data': result['data'],
+            'raw_text': str(result.get('raw_data', result.get('error', '')))
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'data': {
+                'amount': 0,
+                'description': 'Hóa đơn',
+                'category': 'khac',
                 'date': datetime.now().strftime('%Y-%m-%d')
             },
             'raw_text': f'Error: {str(e)}'
-        })
+        }), 500
 
 @app.route('/api/predict-category', methods=['POST'])
 def predict_category():
@@ -389,4 +362,5 @@ def auth_logout():
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
