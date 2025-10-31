@@ -10,11 +10,22 @@
 
 ## 🚀 Cách chạy
 
-1. **Chạy ứng dụng:**
-   ```cmd
-   cd c:\LTMang_AI\expense_ai
-   scripts\RUN_LOCAL.bat
-   ```
+### Local Mode (Chỉ máy này)
+```cmd
+cd c:\LTMang_AI\expense_ai
+scripts\RUN_LOCAL.bat
+```
+
+### WAN Mode (Truy cập từ Internet)
+```cmd
+# Sử dụng Ngrok
+scripts\RUN_WAN.bat
+
+# Hoặc sử dụng Cloudflare Tunnel
+scripts\RUN_WAN_CLOUDFLARE.bat
+```
+
+📝 Xem hướng dẫn chi tiết: [WAN_SETUP.md](WAN_SETUP.md)
 
 2. **Truy cập:**
    - Frontend: http://localhost:3000
